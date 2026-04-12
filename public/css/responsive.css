@@ -1,0 +1,104 @@
+/* ============================================
+   Scoped responsive helpers for CineRate
+   Safe: no global override for Bootstrap .row/.container/.btn
+   ============================================ */
+
+/* Movie list grid helpers */
+.tmdb-grid {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+}
+
+.tmdb-grid > [class*='col-'] {
+    display: flex;
+}
+
+.tmdb-grid > [class*='col-'] > a {
+    display: block;
+    width: 100%;
+}
+
+.tmdb-grid .card-film {
+    width: 100%;
+}
+
+.tmdb-grid .card-film .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.tmdb-grid .card-film .mt-2 {
+    margin-top: auto !important;
+}
+
+/* Search form helpers */
+.search-form-group {
+    align-items: stretch;
+}
+
+/* Discover filter helpers */
+.discover-filter-grid > [class*='col-'] {
+    display: flex;
+    flex-direction: column;
+}
+
+.discover-filter-grid .btn {
+    min-height: 44px;
+}
+
+/* Mobile phones */
+@media (max-width: 575.98px) {
+    .tmdb-grid {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 0.9rem;
+    }
+
+    .tmdb-grid .card-film .card-img-top {
+        height: 280px;
+    }
+
+    .tmdb-grid .card-film .card-title {
+        font-size: 0.95rem;
+    }
+
+    .search-form-group {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-form-group > .form-control,
+    .search-form-group > .btn {
+        width: 100%;
+        border-radius: 0.5rem !important;
+    }
+
+    .discover-filter-grid > [class*='col-'] {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Large phones */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .discover-filter-grid > .col-md-2,
+    .discover-filter-grid > .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Tablet and up */
+@media (min-width: 768px) {
+    .tmdb-grid {
+        --bs-gutter-x: 1.1rem;
+        --bs-gutter-y: 1.1rem;
+    }
+}
+
+/* Desktop and up */
+@media (min-width: 1200px) {
+    .tmdb-grid {
+        --bs-gutter-x: 1.25rem;
+        --bs-gutter-y: 1.25rem;
+    }
+}
