@@ -42,8 +42,8 @@ DB_DATABASE=${{MySQL.MYSQLDATABASE}}
 DB_USERNAME=${{MySQL.MYSQLUSER}}
 DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
 
-SESSION_DRIVER=database
-CACHE_STORE=database
+SESSION_DRIVER=file
+CACHE_STORE=file
 QUEUE_CONNECTION=sync
 
 TMDB_API_KEY=(isi API key TMDB kamu)
@@ -61,7 +61,7 @@ php artisan key:generate --show
 
 Copy hasil format base64:... ke APP_KEY di Railway.
 
-## 6) Migrasi Database (Wajib)
+## 6) Migrasi Database (Wajib untuk fitur rating/ulasan/admin)
 
 Setelah deploy pertama, jalankan di Railway service web:
 
@@ -94,9 +94,8 @@ Cek setelah deploy sukses:
 
 ### Session error table tidak ada
 
-- Jalankan ulang migration:
-
-php artisan migrate --force
+- Jika pakai SESSION_DRIVER=file, error ini tidak relevan.
+- Kalau mau simpan session di database, set SESSION_DRIVER=database lalu jalankan migration.
 
 ### Aplikasi tidak bisa diakses publik
 
