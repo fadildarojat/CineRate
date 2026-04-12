@@ -14,6 +14,7 @@ Panduan ini bikin project Laravel CineRate langsung jalan di Railway dengan:
 
 Project ini sudah punya file railway.json.
 Template variable juga sudah ada di .env.railway.example.
+Build hint Nixpacks juga sudah ada di nixpacks.toml (Node 22 + optional deps).
 
 Artinya Railway akan pakai Nixpacks dan start command otomatis dari file itu.
 
@@ -80,6 +81,11 @@ Cek setelah deploy sukses:
 - Data masuk ke database.
 
 ## 8) Troubleshooting Singkat
+
+### Build gagal karena Node terlalu lama / Tailwind native binding
+
+- Repo ini sudah enforce Node 22 lewat package.json + .nvmrc + nixpacks.toml.
+- Jika Railway masih cache build lama, lakukan Redeploy dengan Clear build cache.
 
 ### Error 500
 
