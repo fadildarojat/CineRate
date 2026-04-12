@@ -4,15 +4,16 @@
 
 CineRate adalah aplikasi rating dan ulasan film berbasis Laravel + TMDB API.
 
-## Deploy ke Render
+## Deploy ke Railway
 
 Panduan deploy lengkap ada di file berikut:
 
-- [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
+- [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md)
 
-Project ini juga sudah menyiapkan konfigurasi Blueprint Render di:
+Project ini juga sudah menyiapkan konfigurasi deploy Railway di:
 
-- [render.yaml](render.yaml)
+- [railway.json](railway.json)
+- [.env.railway.example](.env.railway.example)
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
