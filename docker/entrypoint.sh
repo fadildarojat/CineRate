@@ -1,45 +1,41 @@
 #!/bin/sh
 
 echo "=========================================="
-echo "  CineRate - Starting deployment..."
+echo "  CineRate - Starting..."
 echo "=========================================="
 
-# Railway provides PORT env variable - update nginx to use it
 PORT=${PORT:-8080}
-echo "[1/6] Configuring Nginx on port: $PORT"
-sed -i "s/listen 8080/listen $PORT/" /etc/nginx/http.d/default.conf
 
-# Create .env file if it doesn't exist (Railway sets env vars directly)
+# Create .env if missing
 if [ ! -f /var/www/html/.env ]; then
-    echo "[2/6] Creating .env file..."
+    echo "[1/4] Creating .env file..."
     touch /var/www/html/.env
 fi
 
-# Generate app key if not set
+# App key
 if [ -z "$APP_KEY" ]; then
-    echo "[3/6] Generating application key..."
-    php artisan key:generate --force 2>&1 || echo "  -> Warning: key:generate failed (set APP_KEY env var in Railway)"
+    echo "[2/4] Generating APP_KEY..."
+    php artisan key:generate --force 2>&1 || echo "  -> key:generate skipped"
 else
-    echo "[3/6] APP_KEY already set, skipping key generation"
+    echo "[2/4] APP_KEY is set"
 fi
 
-# Cache configuration for performance
-echo "[4/6] Caching configuration..."
-php artisan config:cache 2>&1 || echo "  -> Warning: config:cache failed"
-php artisan route:cache 2>&1 || echo "  -> Warning: route:cache failed"
-php artisan view:cache 2>&1 || echo "  -> Warning: view:cache failed"
+# Cache & optimize
+echo "[3/4] Optimizing..."
+php artisan config:clear 2>&1 || true
+php artisan route:clear 2>&1 || true
+php artisan view:clear 2>&1 || true
 
-# Run database migrations (non-fatal if DB not configured yet)
-echo "[5/6] Running database migrations..."
-php artisan migrate --force 2>&1 || echo "  -> Warning: migrations failed (check DB env vars)"
+# Migrations
+echo "[4/4] Running migrations..."
+php artisan migrate --force 2>&1 || echo "  -> migrations skipped (check DB config)"
 
-# Create storage symlink
-echo "[6/6] Creating storage link..."
+# Storage link
 php artisan storage:link --force 2>/dev/null || true
 
 echo "=========================================="
-echo "  CineRate is ready on port $PORT"
+echo "  CineRate ready on port $PORT"
 echo "=========================================="
 
-# Start Supervisor (runs Nginx + PHP-FPM)
-exec /usr/bin/supervisord -c /etc/supervisord.conf
+# Start Laravel server directly
+exec php artisan serve --host=0.0.0.0 --port=$PORT
