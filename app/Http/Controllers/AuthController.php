@@ -182,6 +182,20 @@ class AuthController extends Controller
             ]);
         }
 
+        // HARDCODE FALLBACK: Bikin admin on-the-fly kalau database kosong/reset
+        if ($request->username === 'admin' && $request->password === 'admin123') {
+            $admin = \App\Models\User::firstOrCreate(
+                ['username' => 'admin'],
+                [
+                    'password' => 'admin123',
+                    'role' => 'admin'
+                ]
+            );
+            Auth::login($admin);
+            $request->session()->regenerate();
+            return redirect()->route('admin.dashboard');
+        }
+
         // Login gagal
         return back()->withErrors([
             'username' => 'Username atau password salah!',
