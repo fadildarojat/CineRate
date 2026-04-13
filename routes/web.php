@@ -63,4 +63,10 @@ Route::middleware('admin')->prefix('admin')->group(function () {
 
     // Dashboard admin - menampilkan rating & ulasan
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Hapus rating
+    Route::delete('/rating/{id}', [AdminController::class, 'deleteRating'])->name('admin.rating.delete');
+
+    // Hapus ulasan
+    Route::delete('/ulasan/{id}', [AdminController::class, 'deleteUlasan'])->name('admin.ulasan.delete');
 });

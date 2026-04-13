@@ -51,4 +51,24 @@ class AdminController extends Controller
             'totalRating', 'totalUlasan', 'ratings', 'ulasans', 'filmNames'
         ));
     }
+
+    /**
+     * Hapus rating berdasarkan ID
+     * URL: DELETE /admin/rating/{id}
+     */
+    public function deleteRating($id)
+    {
+        Rating::findOrFail($id)->delete();
+        return redirect()->route('admin.dashboard')->with('sukses', 'Rating berhasil dihapus!');
+    }
+
+    /**
+     * Hapus ulasan berdasarkan ID
+     * URL: DELETE /admin/ulasan/{id}
+     */
+    public function deleteUlasan($id)
+    {
+        Ulasan::findOrFail($id)->delete();
+        return redirect()->route('admin.dashboard')->with('sukses', 'Ulasan berhasil dihapus!');
+    }
 }

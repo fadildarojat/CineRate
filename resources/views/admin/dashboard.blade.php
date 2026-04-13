@@ -65,6 +65,7 @@
                         <th>Film</th>
                         <th>Rating</th>
                         <th>Tanggal</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,10 +83,19 @@
                             {{ $rating->rating }}/10
                         </td>
                         <td style="white-space: nowrap;">{{ $rating->created_at->format('d M Y, H:i') }}</td>
+                        <td>
+                            <form action="{{ route('admin.rating.delete', $rating->id) }}" method="POST" onsubmit="return confirm('Hapus rating ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4" style="color: var(--imdb-text-muted);">
+                        <td colspan="6" class="text-center py-4" style="color: var(--imdb-text-muted);">
                             <i class="bi bi-info-circle"></i> Belum ada rating.
                         </td>
                     </tr>
@@ -113,6 +123,7 @@
                         <th>Film</th>
                         <th>Komentar</th>
                         <th>Tanggal</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -127,10 +138,19 @@
                         </td>
                         <td>{{ Str::limit($ulasan->komentar, 80) }}</td>
                         <td style="white-space: nowrap;">{{ $ulasan->created_at->format('d M Y, H:i') }}</td>
+                        <td>
+                            <form action="{{ route('admin.ulasan.delete', $ulasan->id) }}" method="POST" onsubmit="return confirm('Hapus ulasan ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i> Hapus
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center py-4" style="color: var(--imdb-text-muted);">
+                        <td colspan="6" class="text-center py-4" style="color: var(--imdb-text-muted);">
                             <i class="bi bi-info-circle"></i> Belum ada ulasan.
                         </td>
                     </tr>
