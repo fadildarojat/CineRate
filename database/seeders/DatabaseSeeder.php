@@ -18,6 +18,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Skip jika data sudah ada (supaya aman saat re-deploy)
+        if (User::where('username', 'admin')->exists()) {
+            return;
+        }
+
         // ============================================
         // DATA USER
         // ============================================
