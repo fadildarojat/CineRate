@@ -27,10 +27,14 @@ class TmdbService
             $params['language'] = 'id-ID';
         }
 
-        $response = Http::timeout(10)->get("{$this->baseUrl}{$endpoint}", $params);
+        try {
+            $response = Http::timeout(10)->get("{$this->baseUrl}{$endpoint}", $params);
 
-        if ($response->successful()) {
-            return $response->json();
+            if ($response->successful()) {
+                return $response->json();
+            }
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         return null;
