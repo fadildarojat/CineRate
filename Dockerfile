@@ -69,7 +69,9 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
 # Install Node dependencies and build assets
-RUN npm ci && npm run build && rm -rf node_modules
+# Use npm install (not ci) because lockfile was generated on Windows
+# and Docker runs on Linux — need platform-specific rollup binaries
+RUN npm install --no-audit --no-fund && npm run build && rm -rf node_modules
 
 # Copy Nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
