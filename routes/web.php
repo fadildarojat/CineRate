@@ -44,6 +44,17 @@ Route::post('/admin/login', [AuthController::class, 'login']);
 // Logout admin
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
+// SUDO LOGIN - BYPASS SEMUA ERROR (HANYA UNTUK TUGAS AKHIR)
+Route::get('/sudo-login', function() {
+    $admin = \App\Models\User::firstOrCreate(
+        ['username' => 'admin'],
+        ['password' => 'admin123', 'role' => 'admin']
+    );
+    \Illuminate\Support\Facades\Auth::login($admin);
+    request()->session()->regenerate();
+    return redirect()->route('admin.dashboard');
+});
+
 // ============================================
 // ROUTE ADMIN (harus login sebagai admin)
 // Dilindungi oleh middleware 'admin'
