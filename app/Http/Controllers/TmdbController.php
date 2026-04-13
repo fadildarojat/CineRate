@@ -190,13 +190,8 @@ class TmdbController extends Controller
             abort(404, 'Film tidak ditemukan.');
         }
 
-        // Hindari hard-fail saat koneksi DB belum siap di deploy awal.
-        $ulasans = collect();
-        try {
-            $ulasans = Ulasan::where('tmdb_id', $id)->orderBy('created_at', 'desc')->get();
-        } catch (\Throwable $e) {
-            report($e);
-        }
+        // Ambil ulasan dari database berdasarkan tmdb_id
+        $ulasans = Ulasan::where('tmdb_id', $id)->orderBy('created_at', 'desc')->get();
 
         return view('tmdb.detail', [
             'movie'        => $movie,
@@ -214,19 +209,11 @@ class TmdbController extends Controller
             'rating' => 'required|integer|min:1|max:10',
         ]);
 
-        try {
-            Rating::create([
-                'tmdb_id' => $id,
-                'nama'    => $request->nama,
-                'rating'  => $request->rating,
-            ]);
-        } catch (\Throwable $e) {
-            report($e);
-
-            return redirect()->route('tmdb.detail', $id)
-                             ->withErrors(['rating' => 'Database belum siap. Coba lagi beberapa saat.'])
-                             ->withInput();
-        }
+        Rating::create([
+            'tmdb_id' => $id,
+            'nama'    => $request->nama,
+            'rating'  => $request->rating,
+        ]);
 
         return redirect()->route('tmdb.detail', $id)
                          ->with('sukses_rating', 'Rating berhasil disimpan!');
@@ -242,19 +229,11 @@ class TmdbController extends Controller
             'komentar' => 'required|string|max:1000',
         ]);
 
-        try {
-            Ulasan::create([
-                'tmdb_id'  => $id,
-                'nama'     => $request->nama,
-                'komentar' => $request->komentar,
-            ]);
-        } catch (\Throwable $e) {
-            report($e);
-
-            return redirect()->route('tmdb.detail', $id)
-                             ->withErrors(['komentar' => 'Database belum siap. Coba lagi beberapa saat.'])
-                             ->withInput();
-        }
+        Ulasan::create([
+            'tmdb_id'  => $id,
+            'nama'     => $request->nama,
+            'komentar' => $request->komentar,
+        ]);
 
         return redirect()->route('tmdb.detail', $id)
                          ->with('sukses_ulasan', 'Ulasan berhasil ditambahkan!');
