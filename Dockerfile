@@ -1,22 +1,10 @@
-FROM node:20-alpine AS node-builder
-
-WORKDIR /app
-
-COPY package.json package-lock.json* ./
-RUN npm ci
-
-COPY vite.config.js ./
-COPY resources ./resources
-COPY public ./public
-
-RUN npm run build
-
 # ============================================
-# PHP + Nginx Production Image
+# CineRate - Railway Deployment Dockerfile
+# Single-stage build for reliability
 # ============================================
 FROM php:8.3-fpm-alpine
 
-# Install system dependencies
+# Install system dependencies (including Node.js for Vite build)
 RUN apk add --no-cache \
     nginx \
     supervisor \
@@ -31,7 +19,9 @@ RUN apk add --no-cache \
     libxml2-dev \
     sqlite-dev \
     icu-dev \
-    linux-headers
+    linux-headers \
+    nodejs \
+    npm
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -49,39 +39,37 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     opcache
 
 # Configure OPcache for production
-RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.interned_strings_buffer=64" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.max_accelerated_files=32531" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.validate_timestamps=0" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.save_comments=1" >> /usr/local/etc/php/conf.d/opcache.ini \
-    && echo "opcache.fast_shutdown=0" >> /usr/local/etc/php/conf.d/opcache.ini
+RUN { \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.memory_consumption=256'; \
+    echo 'opcache.interned_strings_buffer=64'; \
+    echo 'opcache.max_accelerated_files=32531'; \
+    echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.save_comments=1'; \
+    echo 'opcache.fast_shutdown=0'; \
+    } > /usr/local/etc/php/conf.d/opcache.ini
 
-# Configure PHP
-RUN echo "upload_max_filesize=64M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "post_max_size=64M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "memory_limit=512M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini
+# Configure PHP limits
+RUN { \
+    echo 'upload_max_filesize=64M'; \
+    echo 'post_max_size=64M'; \
+    echo 'memory_limit=512M'; \
+    echo 'max_execution_time=600'; \
+    } > /usr/local/etc/php/conf.d/limits.ini
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy composer files first for caching
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies (no dev)
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
-
-# Copy application code
+# Copy all application code
 COPY . .
 
-# Copy built assets from Node stage
-COPY --from=node-builder /app/public/build ./public/build
+# Install PHP dependencies (no dev)
+RUN composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction
 
-# Finalize Composer
-RUN composer dump-autoload --optimize --no-dev
+# Install Node dependencies and build assets
+RUN npm ci && npm run build && rm -rf node_modules
 
 # Copy Nginx config
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
@@ -90,20 +78,19 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 
 # Create necessary directories and set permissions
-RUN mkdir -p /var/www/html/storage/framework/{sessions,views,cache} \
-    && mkdir -p /var/www/html/storage/logs \
-    && mkdir -p /var/www/html/bootstrap/cache \
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
     && mkdir -p /var/log/supervisor \
-    && chown -R www-data:www-data /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+    && chown -R www-data:www-data storage \
+    && chown -R www-data:www-data bootstrap/cache \
+    && chmod -R 775 storage \
+    && chmod -R 775 bootstrap/cache
 
-# Copy and set entrypoint
+# Copy and set entrypoint (ensure LF line endings)
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
-# Railway uses PORT env variable
-EXPOSE ${PORT:-8080}
+EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
