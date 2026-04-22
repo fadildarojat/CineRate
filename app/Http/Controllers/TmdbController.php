@@ -191,12 +191,21 @@ class TmdbController extends Controller
             abort(404, 'Film tidak ditemukan.');
         }
 
-        // Ambil ulasan dari database berdasarkan tmdb_id
         $ulasans = Ulasan::where('tmdb_id', $id)->orderBy('created_at', 'desc')->get();
+
+        // Ambil rating dan ulasan milik user yang sedang login (jika ada)
+        $userRating = null;
+        $userUlasan = null;
+        if (Auth::check()) {
+            $userRating = Rating::where('tmdb_id', $id)->where('user_id', Auth::id())->first();
+            $userUlasan = Ulasan::where('tmdb_id', $id)->where('user_id', Auth::id())->first();
+        }
 
         return view('tmdb.detail', [
             'movie'        => $movie,
             'ulasans'      => $ulasans,
+            'userRating'   => $userRating,
+            'userUlasan'   => $userUlasan,
         ]);
     }
 
@@ -210,15 +219,13 @@ class TmdbController extends Controller
             'rating' => 'required|integer|min:1|max:10',
         ]);
 
-        Rating::create([
-            'tmdb_id' => $id,
-            'user_id' => Auth::id(),
-            'nama'    => Auth::user()->username,
-            'rating'  => $request->rating,
-        ]);
+        Rating::updateOrCreate(
+            ['tmdb_id' => $id, 'user_id' => Auth::id()],
+            ['nama' => Auth::user()->username, 'rating' => $request->rating]
+        );
 
         return redirect()->route('tmdb.detail', $id)
-                         ->with('sukses_rating', 'Rating berhasil disimpan!');
+                         ->with('sukses_rating', 'Rating berhasil disimpan/diperbarui!');
     }
 
     /**
@@ -231,14 +238,12 @@ class TmdbController extends Controller
             'komentar' => 'required|string|max:1000',
         ]);
 
-        Ulasan::create([
-            'tmdb_id'  => $id,
-            'user_id'  => Auth::id(),
-            'nama'     => Auth::user()->username,
-            'komentar' => $request->komentar,
-        ]);
+        Ulasan::updateOrCreate(
+            ['tmdb_id' => $id, 'user_id' => Auth::id()],
+            ['nama' => Auth::user()->username, 'komentar' => $request->komentar]
+        );
 
         return redirect()->route('tmdb.detail', $id)
-                         ->with('sukses_ulasan', 'Ulasan berhasil ditambahkan!');
+                         ->with('sukses_ulasan', 'Ulasan berhasil disimpan/diperbarui!');
     }
 }

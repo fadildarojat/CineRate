@@ -90,7 +90,7 @@
         <div class="col-md-6 mb-4">
             <div class="form-rating">
                 <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
-                    <i class="bi bi-star"></i> Beri Rating
+                    <i class="bi bi-star"></i> {{ isset($userRating) ? 'Ubah Rating Anda' : 'Beri Rating' }}
                 </h4>
 
                 @if(session('sukses_rating'))
@@ -121,13 +121,25 @@
                                 </span>
                             @endfor
                         </div>
-                        <input type="hidden" name="rating" id="input-rating" value="0">
+                        <input type="hidden" name="rating" id="input-rating" value="{{ isset($userRating) ? $userRating->rating : 0 }}">
                     </div>
 
                     <button type="submit" class="btn btn-imdb">
-                        <i class="bi bi-send"></i> Kirim Rating
+                        <i class="bi bi-send"></i> {{ isset($userRating) ? 'Perbarui Rating' : 'Kirim Rating' }}
                     </button>
                 </form>
+                
+                @if(isset($userRating))
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        setTimeout(function() {
+                            if (typeof pilihRating === 'function') {
+                                pilihRating({{ $userRating->rating }});
+                            }
+                        }, 500);
+                    });
+                </script>
+                @endif
             </div>
         </div>
 
@@ -135,7 +147,7 @@
         <div class="col-md-6 mb-4">
             <div class="form-rating">
                 <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
-                    <i class="bi bi-chat-dots"></i> Tulis Ulasan
+                    <i class="bi bi-chat-dots"></i> {{ isset($userUlasan) ? 'Ubah Ulasan Anda' : 'Tulis Ulasan' }}
                 </h4>
 
                 @if(session('sukses_ulasan'))
@@ -154,11 +166,11 @@
                     <div class="mb-3">
                         <label for="komentar" class="form-label">Komentar</label>
                         <textarea class="form-control" name="komentar" id="komentar" rows="4"
-                                  placeholder="Tulis ulasan Anda tentang film ini..." required></textarea>
+                                  placeholder="Tulis ulasan Anda tentang film ini..." required>{{ isset($userUlasan) ? $userUlasan->komentar : '' }}</textarea>
                     </div>
 
                     <button type="submit" class="btn btn-imdb">
-                        <i class="bi bi-send"></i> Kirim Ulasan
+                        <i class="bi bi-send"></i> {{ isset($userUlasan) ? 'Perbarui Ulasan' : 'Kirim Ulasan' }}
                     </button>
                 </form>
             </div>
