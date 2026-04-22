@@ -1,7 +1,7 @@
 {{-- ============================================
     HALAMAN DETAIL FILM TMDB
     Menampilkan info lengkap film dari TMDB API
-    + Form rating & ulasan (tanpa login, input nama)
+    + Tombol streaming + Form rating & ulasan (harus login)
     ============================================ --}}
 
 @extends('layouts.app')
@@ -28,6 +28,11 @@
                 <i class="bi bi-film" style="font-size: 5rem;"></i>
             </div>
         @endif
+
+        {{-- Tombol Tonton Sekarang --}}
+        <a href="{{ route('streaming.watch', $movie['id']) }}" class="btn btn-streaming w-100 mt-3" id="btn-watch">
+            <i class="bi bi-play-circle-fill"></i> Tonton Sekarang
+        </a>
     </div>
 
     {{-- Info Film --}}
@@ -43,6 +48,10 @@
                     @foreach($movie['genres'] as $genre)
                         <span class="badge badge-genre">{{ $genre['name'] }}</span>
                     @endforeach
+                @endif
+                @if(!empty($movie['runtime']))
+                    &nbsp;|&nbsp;
+                    <i class="bi bi-clock"></i> {{ floor($movie['runtime'] / 60) }}j {{ $movie['runtime'] % 60 }}m
                 @endif
             </p>
 
@@ -60,6 +69,11 @@
             <p style="color: var(--imdb-text); line-height: 1.7;">
                 {{ $movie['overview'] ?: 'Sinopsis tidak tersedia.' }}
             </p>
+
+            {{-- Tombol Tonton (versi desktop, di info section) --}}
+            <a href="{{ route('streaming.watch', $movie['id']) }}" class="btn btn-streaming btn-lg mt-2 d-none d-md-inline-flex">
+                <i class="bi bi-play-circle-fill"></i> Tonton Sekarang
+            </a>
         </div>
     </div>
 </div>
@@ -68,98 +82,107 @@
 
 {{-- ============================================ --}}
 {{-- FORM RATING DAN ULASAN                       --}}
-{{-- Tanpa login, cukup input nama                --}}
+{{-- Harus login untuk memberi rating & ulasan    --}}
 {{-- ============================================ --}}
-<div class="row mt-4">
-    {{-- Form Rating --}}
-    <div class="col-md-6 mb-4">
-        <div class="form-rating">
-            <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
-                <i class="bi bi-star"></i> Beri Rating
-            </h4>
+<div class="row mt-4" id="ulasan">
+    @auth
+        {{-- Form Rating --}}
+        <div class="col-md-6 mb-4">
+            <div class="form-rating">
+                <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
+                    <i class="bi bi-star"></i> Beri Rating
+                </h4>
 
-            @if(session('sukses_rating'))
-                <div class="alert alert-success alert-auto-hide">{{ session('sukses_rating') }}</div>
-            @endif
+                @if(session('sukses_rating'))
+                    <div class="alert alert-success alert-auto-hide">{{ session('sukses_rating') }}</div>
+                @endif
 
-            @if($errors->has('rating'))
-                <div class="alert alert-danger alert-auto-hide">
-                    {{ $errors->first('rating') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('tmdb.rating', $movie['id']) }}">
-                @csrf
-                <div class="mb-3">
-                    <label for="nama_rating" class="form-label">
-                        <i class="bi bi-person"></i> Nama Anda
-                    </label>
-                    <input type="text" class="form-control @error('nama') is-invalid @enderror"
-                           name="nama" id="nama_rating"
-                           placeholder="Masukkan nama Anda"
-                           value="{{ old('nama') }}" required>
-                    @error('nama')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Rating (1-10)</label>
-                    <div>
-                        @for($i = 1; $i <= 10; $i++)
-                            <span class="star-interactive" onclick="pilihRating({{ $i }})" style="cursor: pointer;">
-                                <i class="bi bi-star"></i>
-                            </span>
-                        @endfor
+                @if($errors->has('rating'))
+                    <div class="alert alert-danger alert-auto-hide">
+                        {{ $errors->first('rating') }}
                     </div>
-                    <input type="hidden" name="rating" id="input-rating" value="0">
-                </div>
+                @endif
 
-                <button type="submit" class="btn btn-imdb">
-                    <i class="bi bi-send"></i> Kirim Rating
-                </button>
-            </form>
+                <form method="POST" action="{{ route('tmdb.rating', $movie['id']) }}">
+                    @csrf
+                    <div class="mb-3">
+                        <p style="color: var(--imdb-text-muted); font-size: 0.9rem;">
+                            <i class="bi bi-person-circle"></i> Rating sebagai 
+                            <strong style="color: var(--imdb-yellow);">{{ Auth::user()->username }}</strong>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Rating (1-10)</label>
+                        <div>
+                            @for($i = 1; $i <= 10; $i++)
+                                <span class="star-interactive" onclick="pilihRating({{ $i }})" style="cursor: pointer;">
+                                    <i class="bi bi-star"></i>
+                                </span>
+                            @endfor
+                        </div>
+                        <input type="hidden" name="rating" id="input-rating" value="0">
+                    </div>
+
+                    <button type="submit" class="btn btn-imdb">
+                        <i class="bi bi-send"></i> Kirim Rating
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
 
-    {{-- Form Ulasan --}}
-    <div class="col-md-6 mb-4">
-        <div class="form-rating">
-            <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
-                <i class="bi bi-chat-dots"></i> Tulis Ulasan
-            </h4>
+        {{-- Form Ulasan --}}
+        <div class="col-md-6 mb-4">
+            <div class="form-rating">
+                <h4 class="fw-bold mb-3" style="color: var(--imdb-yellow);">
+                    <i class="bi bi-chat-dots"></i> Tulis Ulasan
+                </h4>
 
-            @if(session('sukses_ulasan'))
-                <div class="alert alert-success alert-auto-hide">{{ session('sukses_ulasan') }}</div>
-            @endif
+                @if(session('sukses_ulasan'))
+                    <div class="alert alert-success alert-auto-hide">{{ session('sukses_ulasan') }}</div>
+                @endif
 
-            <form method="POST" action="{{ route('tmdb.ulasan', $movie['id']) }}">
-                @csrf
-                <div class="mb-3">
-                    <label for="nama_ulasan" class="form-label">
-                        <i class="bi bi-person"></i> Nama Anda
-                    </label>
-                    <input type="text" class="form-control @error('nama') is-invalid @enderror"
-                           name="nama" id="nama_ulasan"
-                           placeholder="Masukkan nama Anda"
-                           value="{{ old('nama') }}" required>
-                    @error('nama')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                <form method="POST" action="{{ route('tmdb.ulasan', $movie['id']) }}">
+                    @csrf
+                    <div class="mb-3">
+                        <p style="color: var(--imdb-text-muted); font-size: 0.9rem;">
+                            <i class="bi bi-person-circle"></i> Ulasan sebagai 
+                            <strong style="color: var(--imdb-yellow);">{{ Auth::user()->username }}</strong>
+                        </p>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="komentar" class="form-label">Komentar</label>
-                    <textarea class="form-control" name="komentar" id="komentar" rows="4"
-                              placeholder="Tulis ulasan Anda tentang film ini..." required></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="komentar" class="form-label">Komentar</label>
+                        <textarea class="form-control" name="komentar" id="komentar" rows="4"
+                                  placeholder="Tulis ulasan Anda tentang film ini..." required></textarea>
+                    </div>
 
-                <button type="submit" class="btn btn-imdb">
-                    <i class="bi bi-send"></i> Kirim Ulasan
-                </button>
-            </form>
+                    <button type="submit" class="btn btn-imdb">
+                        <i class="bi bi-send"></i> Kirim Ulasan
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
+    @else
+        {{-- Pesan Login Required --}}
+        <div class="col-12 mb-4">
+            <div class="form-rating text-center py-5">
+                <i class="bi bi-lock" style="font-size: 3rem; color: var(--imdb-yellow); display: block; margin-bottom: 1rem;"></i>
+                <h4 class="fw-bold mb-3" style="color: #fff;">Login untuk Memberi Rating & Ulasan</h4>
+                <p style="color: var(--imdb-text-muted); margin-bottom: 1.5rem;">
+                    Kamu harus login terlebih dahulu untuk bisa memberikan rating dan menulis ulasan film ini.
+                </p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <a href="{{ route('login') }}" class="btn btn-imdb">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-imdb">
+                        <i class="bi bi-person-plus"></i> Daftar
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endauth
 </div>
 
 <hr style="border-color: var(--imdb-dark-4);">

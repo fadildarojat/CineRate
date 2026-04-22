@@ -6,6 +6,7 @@ use App\Models\Rating;
 use App\Models\Ulasan;
 use App\Services\TmdbService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TmdbController extends Controller
 {
@@ -201,17 +202,18 @@ class TmdbController extends Controller
 
     /**
      * Simpan rating untuk film TMDB
+     * Membutuhkan login - nama otomatis dari user
      */
     public function simpanRating(Request $request, int $id)
     {
         $request->validate([
-            'nama'   => 'required|string|max:100',
             'rating' => 'required|integer|min:1|max:10',
         ]);
 
         Rating::create([
             'tmdb_id' => $id,
-            'nama'    => $request->nama,
+            'user_id' => Auth::id(),
+            'nama'    => Auth::user()->username,
             'rating'  => $request->rating,
         ]);
 
@@ -221,17 +223,18 @@ class TmdbController extends Controller
 
     /**
      * Simpan ulasan untuk film TMDB
+     * Membutuhkan login - nama otomatis dari user
      */
     public function simpanUlasan(Request $request, int $id)
     {
         $request->validate([
-            'nama'     => 'required|string|max:100',
             'komentar' => 'required|string|max:1000',
         ]);
 
         Ulasan::create([
             'tmdb_id'  => $id,
-            'nama'     => $request->nama,
+            'user_id'  => Auth::id(),
+            'nama'     => Auth::user()->username,
             'komentar' => $request->komentar,
         ]);
 

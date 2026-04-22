@@ -8,6 +8,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\StreamingController;
 use App\Http\Controllers\TmdbController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,7 +20,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [TmdbController::class, 'home'])->name('home');
 
 // ============================================
+// ROUTE AUTENTIKASI USER (Login & Register)
+// ============================================
+
+Route::get('/login', [AuthController::class, 'showLoginUser'])->name('login');
+Route::post('/login', [AuthController::class, 'loginUser']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logoutUser'])->name('logout');
+
+// ============================================
 // ROUTE TMDB (Browse Film dari TMDB API)
+// Publik - bisa diakses tanpa login
 // ============================================
 
 Route::prefix('browse')->group(function () {
@@ -29,8 +41,20 @@ Route::prefix('browse')->group(function () {
     Route::get('/search', [TmdbController::class, 'search'])->name('tmdb.search');
     Route::get('/discover', [TmdbController::class, 'discover'])->name('tmdb.discover');
     Route::get('/movie/{id}', [TmdbController::class, 'detail'])->name('tmdb.detail');
-    Route::post('/movie/{id}/rating', [TmdbController::class, 'simpanRating'])->name('tmdb.rating');
-    Route::post('/movie/{id}/ulasan', [TmdbController::class, 'simpanUlasan'])->name('tmdb.ulasan');
+});
+
+// ============================================
+// ROUTE YANG BUTUH LOGIN (auth middleware)
+// Rating, ulasan, dan streaming
+// ============================================
+
+Route::middleware('auth')->group(function () {
+    // Rating & Ulasan (harus login)
+    Route::post('/browse/movie/{id}/rating', [TmdbController::class, 'simpanRating'])->name('tmdb.rating');
+    Route::post('/browse/movie/{id}/ulasan', [TmdbController::class, 'simpanUlasan'])->name('tmdb.ulasan');
+
+    // Streaming (harus login)
+    Route::get('/watch/{id}', [StreamingController::class, 'watch'])->name('streaming.watch');
 });
 
 // ============================================

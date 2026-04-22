@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'CineRate - Rating & Review Film')</title>
+    <title>@yield('title', 'CineRate - Rating, Review & Streaming Film')</title>
 
     {{-- Bootstrap 5 CSS --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -756,6 +756,136 @@
                 scroll-behavior: auto;
             }
         }
+
+        /* ---- TOMBOL STREAMING ---- */
+        .btn-streaming {
+            background: linear-gradient(135deg, #e50914, #b20710);
+            color: #fff;
+            border: none;
+            font-weight: 700;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-streaming:hover {
+            background: linear-gradient(135deg, #ff1a25, #e50914);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(229, 9, 20, 0.5);
+        }
+
+        .btn-streaming:active {
+            transform: translateY(0);
+        }
+
+        .btn-streaming i {
+            font-size: 1.2em;
+        }
+
+        /* ---- CARD WATCH OVERLAY ---- */
+        .card-watch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: clamp(200px, 50vw, 350px);
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+            text-decoration: none;
+        }
+
+        .card-film:hover .card-watch-overlay {
+            opacity: 1;
+        }
+
+        .card-watch-overlay i {
+            font-size: 3.5rem;
+            color: #fff;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .card-watch-overlay:hover i {
+            transform: scale(1.15);
+            color: var(--imdb-yellow);
+        }
+
+        /* ---- SMALL WATCH BUTTON ---- */
+        .btn-watch-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e50914, #b20710);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .btn-watch-small:hover {
+            background: linear-gradient(135deg, #ff1a25, #e50914);
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 2px 10px rgba(229, 9, 20, 0.4);
+        }
+
+        /* ---- NAVBAR USER DROPDOWN ---- */
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-user .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--imdb-yellow);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .navbar-user .user-name {
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid var(--imdb-dark-5);
+            color: var(--imdb-text-muted);
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 59, 48, 0.15);
+            border-color: #ff3b30;
+            color: #ff3b30;
+        }
     </style>
 </head>
 <body>
@@ -811,6 +941,31 @@
                     </button>
                 </div>
             </form>
+
+            {{-- Auth Buttons --}}
+            <div class="d-flex align-items-center gap-2 ms-2">
+                @auth
+                    <div class="navbar-user">
+                        <div class="user-avatar">
+                            {{ strtoupper(substr(Auth::user()->username, 0, 1)) }}
+                        </div>
+                        <span class="user-name d-none d-lg-inline">{{ Auth::user()->username }}</span>
+                    </div>
+                    <form method="POST" action="{{ Auth::user()->isAdmin() ? route('admin.logout') : route('logout') }}" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="btn btn-login">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-imdb btn-sm" style="font-size: 0.85rem;">
+                        <i class="bi bi-person-plus"></i> Daftar
+                    </a>
+                @endauth
+            </div>
         </div>
     </div>
 </nav>
@@ -836,7 +991,7 @@
             CineRate
         </p>
         <p class="mb-0" style="color: var(--imdb-text-muted); font-size: 0.85rem;">
-            &copy; {{ date('Y') }} | CineRate - Rating & Review Film
+            &copy; {{ date('Y') }} | CineRate - Rating, Review & Streaming Film
         </p>
     </div>
 </footer>

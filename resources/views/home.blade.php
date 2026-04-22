@@ -6,7 +6,7 @@
 
 @extends('layouts.app')
 
-@section('title', 'CineRate - Rating & Review Film')
+@section('title', 'CineRate - Rating, Review & Streaming Film')
 
 @section('content')
 
@@ -14,7 +14,7 @@
 <div class="hero-section">
     <div class="container">
         <h1>CineRate</h1>
-        <p>Temukan film favoritmu, berikan rating, dan tulis ulasanmu!</p>
+        <p>Temukan, tonton, beri rating, dan tulis ulasan film favoritmu!</p>
     </div>
 </div>
 
