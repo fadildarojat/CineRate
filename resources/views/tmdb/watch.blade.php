@@ -161,7 +161,7 @@
                         @endif
                         <div>
                             <div style="color: #fff; font-size: 0.85rem; font-weight: 500;">
-                                {{ Str::limit($similar['title'], 25) }}
+                                {{ \Illuminate\Support\Str::limit($similar['title'], 25) }}
                             </div>
                             <div style="color: var(--imdb-text-muted); font-size: 0.75rem;">
                                 <i class="bi bi-star-fill" style="color: var(--imdb-yellow); font-size: 0.7rem;"></i>

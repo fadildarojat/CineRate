@@ -136,7 +136,7 @@
                                 {{ $filmNames[$ulasan->tmdb_id] ?? 'Unknown' }}
                             </a>
                         </td>
-                        <td>{{ Str::limit($ulasan->komentar, 80) }}</td>
+                        <td>{{ \Illuminate\Support\Str::limit($ulasan->komentar, 80) }}</td>
                         <td style="white-space: nowrap;">{{ $ulasan->created_at->format('d M Y, H:i') }}</td>
                         <td>
                             <form action="{{ route('admin.ulasan.delete', $ulasan->id) }}" method="POST" onsubmit="return confirm('Hapus ulasan ini?')">
